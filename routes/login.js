@@ -20,7 +20,7 @@ router.post('/signup', async (req, res) => {
 
   try {
     // Step 1: Validate input
-    if (!License || !owner || !password || !latitude || !longitude) {
+    if (!License || !owner || !password ) {
       return res.status(400).json({ success: false, message: 'All fields are required' });
     }
 
