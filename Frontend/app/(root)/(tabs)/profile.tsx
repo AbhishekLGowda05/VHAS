@@ -52,7 +52,7 @@ const ProfileScreen = () => {
       {/* Footer Navigation */}
       <View style={styles.footer}>
         <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-          <Ionicons name="home" size={28} color="#FF4A4A" />
+          <Ionicons name="home" size={28} color="#1E88E5" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate("Maps")}>
           <Ionicons name="map" size={28} color="#AAA" />
@@ -65,7 +65,7 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#d3f2ff',
     paddingHorizontal: 20,
     paddingTop: 40,
   },
@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
     alignItems: 'center',
+    marginBottom: 90,
   },
   badgesTitle: {
     fontSize: 18,
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
     marginTop: 20,
   },
