@@ -100,11 +100,6 @@ We welcome contributions to improve the Vehicle Hazard Alert System. Please foll
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-## Contact
-For any inquiries or support, please contact:
-- **Email**: your.email@example.com
-- **GitHub**: [yourusername](https://github.com/yourusername)
-
 ---
 **Let's make the roads safer together with VHAS!**
 
