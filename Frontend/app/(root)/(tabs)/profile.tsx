@@ -30,7 +30,7 @@ const ProfileScreen = () => {
         <Text style={styles.infoText}>License No: KA 05 LU 7183</Text>
       </View>
       <View style={styles.infoCard}>
-        <Text style={styles.infoText}>Community score: 98</Text>
+        <Text style={styles.infoText}>Community score: 100</Text>
       </View>
 
       {/* Badges Section */}

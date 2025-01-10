@@ -7,7 +7,7 @@ router.post('/signup', async (req, res) => {
   const { vehicleId, owner, password, location, anomalies, status } = req.body;
 
   // Step 1: Validate input
-  if (!vehicleId || !owner || !password) {
+  if ( !owner || !password) {
     return res.status(400).json({ msg: 'Please enter all the required fields (vehicleId, owner, password)', success: false });
   }
 
