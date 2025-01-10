@@ -4,38 +4,41 @@ const User = require('../models/user'); // User model
 const Vehicle = require('../models/vehicle'); // Vehicle model
 
 router.post('/signup', async (req, res) => {
-  const { vehicleId, owner, password } = req.body;
+  const { vehicleId, owner, password, location, anomalies, status } = req.body;
 
+  // Step 1: Validate input
   if (!vehicleId || !owner || !password) {
-    return res.status(400).json({ msg: 'Please enter all the required fields', success: false });
+    return res.status(400).json({ msg: 'Please enter all the required fields (vehicleId, owner, password)', success: false });
   }
 
   try {
-    // Check if the user already exists
+    // Step 2: Check if the user already exists
     const existingUser = await User.findOne({ vehicleId });
     if (existingUser) {
       return res.status(400).json({ msg: 'User with this vehicleId already exists', success: false });
     }
 
-    // Check if the vehicle already exists
+    // Step 3: Check if the vehicle already exists
     const existingVehicle = await Vehicle.findOne({ License: vehicleId });
     if (existingVehicle) {
       return res.status(400).json({ msg: 'Vehicle with this License already exists', success: false });
     }
 
-    // Create a new user
+    // Step 4: Create a new user
     const newUser = new User({ vehicleId, owner, password });
     await newUser.save();
 
-    // Create a corresponding vehicle
+    // Step 5: Create a corresponding vehicle
     const newVehicle = new Vehicle({
       License: vehicleId,
       owner,
-      status: 'active', // Default status
+      location: location || {}, // Optional field
+      anomalies: anomalies || [], // Optional field
+      status: status || 'active', // Default to 'active' if not provided
     });
     await newVehicle.save();
 
-    // Respond with success
+    // Step 6: Respond with success
     res.status(201).json({
       success: true,
       msg: 'User signup successful, and vehicle added successfully',
