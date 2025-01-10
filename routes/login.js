@@ -1,142 +1,52 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/user');
-const Vehicle = require('../models/vehicle');
-const dotenv = require('dotenv');
-dotenv.config();
-
 const router = express.Router();
+const User = require('../models/user'); // User model
+const Vehicle = require('../models/vehicle'); // Vehicle model
 
-// Ensure JWT_SECRET is loaded from environment variables
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined in the environment variables');
-}
-
-// **Signup Route**
 router.post('/signup', async (req, res) => {
-  const { License, owner, password, latitude, longitude } = req.body;
+  const { vehicleId, owner, password } = req.body;
+
+  if (!vehicleId || !owner || !password) {
+    return res.status(400).json({ msg: 'Please enter all the required fields', success: false });
+  }
 
   try {
-    // Step 1: Validate input
-    if (!License || !owner || !password ) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
-    }
-
-    // Step 2: Check if vehicle already exists
-    const existingVehicle = await Vehicle.findOne({ License });
-    if (existingVehicle) {
-      return res.status(400).json({ success: false, message: 'Vehicle with this License already exists' });
-    }
-
-    // Step 3: Check if user already exists
-    const existingUser = await User.findOne({ vehicleId: License });
+    // Check if the user already exists
+    const existingUser = await User.findOne({ vehicleId });
     if (existingUser) {
-      return res.status(400).json({ success: false, message: 'User with this License already exists' });
+      return res.status(400).json({ msg: 'User with this vehicleId already exists', success: false });
     }
 
-    // Step 4: Create a new user
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({
-      vehicleId: License,
-      owner,
-      password: hashedPassword,
-    });
+    // Check if the vehicle already exists
+    const existingVehicle = await Vehicle.findOne({ License: vehicleId });
+    if (existingVehicle) {
+      return res.status(400).json({ msg: 'Vehicle with this License already exists', success: false });
+    }
+
+    // Create a new user
+    const newUser = new User({ vehicleId, owner, password });
     await newUser.save();
 
-    // Step 5: Create a new vehicle
+    // Create a corresponding vehicle
     const newVehicle = new Vehicle({
-      License,
+      License: vehicleId,
       owner,
-      location: {
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude),
-      },
+      status: 'active', // Default status
     });
     await newVehicle.save();
 
-    // Step 6: Generate JWT Token
-    const token = jwt.sign({ License, owner }, JWT_SECRET, { expiresIn: '1h' });
-
-    // Step 7: Respond with success
+    // Respond with success
     res.status(201).json({
       success: true,
-      message: 'Signup successful',
-      token,
-      user: {
-        vehicleId: newUser.vehicleId,
-        owner: newUser.owner,
-      },
-      vehicle: {
-        License: newVehicle.License,
-        owner: newVehicle.owner,
-        status: newVehicle.status,
-        location: newVehicle.location,
-      },
-    });
-  } catch (error) {
-    console.error('Signup error:', error.stack);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-// **Login Route**
-router.post('/login', async (req, res) => {
-  const { License, owner, password } = req.body;
-
-  try {
-    // Step 1: Validate input
-    if (!License || !owner || !password) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
-    }
-
-    // Step 2: Find the user by vehicleId
-    const user = await User.findOne({ vehicleId: License });
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    // Step 3: Verify owner
-    if (user.owner !== owner) {
-      return res.status(401).json({ success: false, message: 'Owner verification failed' });
-    }
-
-    // Step 4: Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: 'Invalid password' });
-    }
-
-    // Step 5: Find the vehicle by License
-    const vehicle = await Vehicle.findOne({ License });
-    if (!vehicle) {
-      return res.status(404).json({ success: false, message: 'Vehicle not found' });
-    }
-
-    // Step 6: Verify vehicle status
-    if (vehicle.status !== 'active') {
-      return res.status(403).json({ success: false, message: `Vehicle is not active. Current status: ${vehicle.status}` });
-    }
-
-    // Step 7: Generate JWT Token
-    const token = jwt.sign({ License, owner }, JWT_SECRET, { expiresIn: '1h' });
-
-    // Step 8: Respond with success
-    res.status(200).json({
-      success: true,
-      message: 'Login successful',
-      token,
+      msg: 'User signup successful, and vehicle added successfully',
       data: {
-        License: vehicle.License,
-        owner: vehicle.owner,
-        status: vehicle.status,
-        location: vehicle.location,
+        user: newUser,
+        vehicle: newVehicle,
       },
     });
   } catch (error) {
-    console.error('Login error:', error.stack);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Error during signup:', error.message);
+    res.status(500).json({ success: false, msg: 'Internal server error', error: error.message });
   }
 });
 
